@@ -1,5 +1,5 @@
-name: "Build and Publish Node image to ECR"
-description: "Builds and Pushes built artifacts to a container registry"
+name: "node-docker-build-action"
+description: "Build a GB node app (yarn+TS based) and Pushes built artifacts to a container registry"
 
 inputs:
   npm-token:
