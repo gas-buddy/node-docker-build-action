@@ -36,7 +36,7 @@ RUN /bin/busybox ln /bin/sh /bin/chmod && \
 ## --------------> The production image
 FROM base
 ENV NODE_ENV production
-USER 1000
+USER nonroot
 WORKDIR /pipeline/source
 COPY --from=busybox /bin/busybox /bin/busybox
 COPY --chown=nonroot:nonroot --from=build /pipeline/source/node_modules /pipeline/source/node_modules
