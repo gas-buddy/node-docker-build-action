@@ -24,6 +24,7 @@ COPY --from=busybox /bin/busybox /bin/busybox
 RUN ["/bin/busybox", "ln", "/bin/busybox", "/bin/sh"]
 RUN /bin/busybox ln /bin/sh /bin/chmod && \
   /bin/busybox ln /bin/busybox /bin/cp && \
+  /bin/busybox ln /bin/busybox /bin/env && \
   /bin/busybox ln /bin/busybox /bin/find && \
   /bin/busybox ln /bin/busybox /bin/grep && \
   /bin/busybox ln /bin/busybox /bin/ls && \
@@ -31,11 +32,16 @@ RUN /bin/busybox ln /bin/sh /bin/chmod && \
   /bin/busybox ln /bin/busybox /bin/ping && \
   /bin/busybox ln /bin/busybox /bin/sleep && \
   /bin/busybox ln /bin/busybox /bin/telnet && \
-  /bin/busybox ln /bin/busybox /bin/vi
+  /bin/busybox ln /bin/busybox /bin/vi && \
+  echo -e '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js "$@"' > /bin/start && \
+  echo -e '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /bin/repl \
+  chown nonroot:nonroot /bin/start /bin/repl && \
+  chmod o+rx /bin/start /bin/repl
 
 ## --------------> The production image
 FROM base
 ENV NODE_ENV production
+ENV NODE_NO_WARNINGS 1
 USER nonroot
 WORKDIR /pipeline/source
 COPY --from=busybox /bin/busybox /bin/busybox

@@ -5,10 +5,6 @@ inputs:
   npm-token:
     description: "npm credentials, most useful for private repositories"
     required: true
-  node-env:
-    description: "The NODE_ENV value for the image, defaults to production"
-    required: false
-    default: production
   image-tag:
     description: "The desired tag for the Docker image"
     required: false
@@ -39,7 +35,10 @@ runs:
       run: |
         cp ${{ github.action_path }}/Dockerfile .
         touch static
-        docker build --build-arg NODE_ENV_ARG=${{ inputs.node-env }} --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
+        touch migrations
+        echo "config/development.json" >> .dockerignore
+        echo "config/test.json" >> .dockerignore
+        docker build --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
       if: ${{ inputs.skip-build != 'true' }}
 
     - name: Push to ECR
