@@ -39,7 +39,7 @@ runs:
       run: |
         cp ${{ github.action_path }}/Dockerfile .
         touch static
-        docker build --build-arg NODE_ENV_ARG=${{ inputs.node-env }} NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
+        docker build --build-arg NODE_ENV_ARG=${{ inputs.node-env }} --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
       if: ${{ inputs.skip-build != 'true' }}
 
     - name: Push to ECR
