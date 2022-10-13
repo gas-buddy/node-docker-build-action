@@ -29,6 +29,7 @@ RUN /bin/busybox ln /bin/sh /bin/chmod && \
   /bin/busybox ln /bin/busybox /bin/ls && \
   /bin/busybox ln /bin/busybox /bin/more && \
   /bin/busybox ln /bin/busybox /bin/ping && \
+  /bin/busybox ln /bin/busybox /bin/sleep && \
   /bin/busybox ln /bin/busybox /bin/telnet && \
   /bin/busybox ln /bin/busybox /bin/vi
 
