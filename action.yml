@@ -26,6 +26,10 @@ inputs:
     description: "Set to true if the Docker image is already built earlier in the workflow"
     required: false
     default: false
+  repo-org:
+    description: "The organization to setup for private package installation"
+    required: false
+    default: gasbuddy
 
 runs:
   using: "composite"
@@ -38,7 +42,7 @@ runs:
         touch migrations
         echo "config/development.json" >> .dockerignore
         echo "config/test.json" >> .dockerignore
-        docker build --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
+        docker build --build-arg REPO_ORG=${{ inputs.repo-org }} --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
       if: ${{ inputs.skip-build != 'true' }}
 
     - name: Push to ECR
