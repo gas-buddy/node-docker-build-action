@@ -17,9 +17,11 @@ RUN ln -sr /staging/busybox /staging/sh && \
     ln -sr /staging/busybox /staging/env && \
     ln -sr /staging/busybox /staging/find && \
     ln -sr /staging/busybox /staging/grep && \
+    ln -sr /staging/busybox /staging/kill && \
     ln -sr /staging/busybox /staging/ls && \
     ln -sr /staging/busybox /staging/more && \
     ln -sr /staging/busybox /staging/ping && \
+    ln -sr /staging/busybox /staging/ps && \
     ln -sr /staging/busybox /staging/sleep && \
     ln -sr /staging/busybox /staging/telnet && \
     ln -sr /staging/busybox /staging/vi && \
