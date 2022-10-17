@@ -2,7 +2,7 @@
 FROM busybox:1.35.0-uclibc as busybox
 
 # --------------> The build image
-FROM node:18.10-bullseye AS build
+FROM node:18.11-bullseye AS build
 ARG NPM_TOKEN
 ARG REPO_ORG
 WORKDIR /pipeline/source
@@ -36,9 +36,7 @@ RUN yarn config set npmScopes.$REPO_ORG.npmRegistryServer "https://registry.npmj
     rm -rf .yarnrc.yml .yarn && \
     echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --built "$@"' > /staging/start && \
     echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /staging/repl && \
-    chmod a+rx /staging/start /staging/repl && \
-    # Temporary until bcrypt fixes stuff
-    chmod a+rx /pipeline/source/node_modules/bcrypt/lib/binding/napi-v3/bcrypt_lib.node
+    chmod a+rx /staging/start /staging/repl
 
 ## --------------> Add to default image
 FROM gcr.io/distroless/nodejs-debian11:18 as base
