@@ -20,8 +20,9 @@ The Dockerfile copies only selected directories, so you must be careful about wh
 * config - Configuration and keys - development.json and test.json will be removed
 * migrations - Database migrations
 * api - Api specification
-* static - Any static files such as images, client side Javascript, etc.
+* public - Any static files such as images, client side Javascript, etc.
+* private - Any resources needed that are NOT to be served out but needed at runtime
 
 And of course node_modules is built by installing production packages in the binary format of the container.
 
-Practically, what this means is that if you have assets that you need at runtime that are not in the source directory, you should place them in config or in static.
+Practically, what this means is that if you have assets that you need at runtime that are not in the source directory, you should place them in config, private or public.

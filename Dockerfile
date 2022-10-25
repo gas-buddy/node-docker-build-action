@@ -53,7 +53,8 @@ COPY --chown=nonroot:nonroot src/ /pipeline/source/src/
 COPY --chown=nonroot:nonroot config/ /pipeline/source/config/
 COPY --chown=nonroot:nonroot migrations/ /pipeline/source/migrations/
 COPY --chown=nonroot:nonroot api/ /pipeline/source/api/
-COPY --chown=nonroot:nonroot static/ /pipeline/source/static/
+COPY --chown=nonroot:nonroot public/ /pipeline/source/public/
+COPY --chown=nonroot:nonroot private/ /pipeline/source/private/
 
 ## --------------> Flatten where possible
 FROM base
