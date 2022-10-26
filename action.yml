@@ -41,6 +41,7 @@ runs:
         touch public
         touch private
         touch migrations
+        touch next.config.js
         echo "config/development.json" >> .dockerignore
         echo "config/test.json" >> .dockerignore
         docker build --build-arg REPO_ORG=${{ inputs.repo-org }} --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .

@@ -48,6 +48,7 @@ USER nonroot
 WORKDIR /pipeline/source
 COPY --chown=nonroot:nonroot --from=build /pipeline/source/node_modules /pipeline/source/node_modules
 COPY --chown=nonroot:nonroot package.json /pipeline/source/
+COPY --chown=nonroot:nonroot next.config.js /pipeline/source/
 COPY --chown=nonroot:nonroot build/ /pipeline/source/build/
 COPY --chown=nonroot:nonroot src/ /pipeline/source/src/
 COPY --chown=nonroot:nonroot config/ /pipeline/source/config/
