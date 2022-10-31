@@ -7,9 +7,8 @@ ARG NPM_TOKEN
 ARG REPO_ORG
 ARG BUILD_NODE_ENV=production
 WORKDIR /pipeline/source
-COPY package.json .yarnrc.yml yarn.lock /pipeline/source/
+COPY package.json .yarnrc.yml yarn.lock coconfig.* /pipeline/source/
 COPY .yarn /pipeline/source/.yarn
-COPY coconfig.* /pipeline/source/
 COPY --from=busybox /bin/busybox /staging/busybox
 
 # Setup busybox for distroless. It's a bit against the spirit of distroless, but it's how we choose to roll
