@@ -5,9 +5,11 @@ FROM busybox:1.35.0-uclibc as busybox
 FROM node:18.11-bullseye AS build
 ARG NPM_TOKEN
 ARG REPO_ORG
+ARG BUILD_NODE_ENV=production
 WORKDIR /pipeline/source
 COPY package.json .yarnrc.yml yarn.lock /pipeline/source/
 COPY .yarn /pipeline/source/.yarn
+COPY coconfig.* /pipeline/source/
 COPY --from=busybox /bin/busybox /staging/busybox
 
 # Setup busybox for distroless. It's a bit against the spirit of distroless, but it's how we choose to roll
@@ -27,16 +29,18 @@ RUN ln -sr /staging/busybox /staging/sh && \
     ln -sr /staging/busybox /staging/vi && \
     ln -sr /staging/busybox /staging/wget
 
-# Run out custom yarn setup
+# Run our custom yarn setup
+ENV NODE_ENV=$BUILD_NODE_ENV
 RUN yarn config set npmScopes.$REPO_ORG.npmRegistryServer "https://registry.npmjs.org" \
     && yarn config set npmScopes.$REPO_ORG.npmAlwaysAuth true \
     && yarn config set npmScopes.$REPO_ORG.npmAuthToken $NPM_TOKEN \
     && yarn plugin import workspace-tools \
     && yarn workspaces focus --production && \
-    rm -rf .yarnrc.yml .yarn && \
-    echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --built "$@"' > /staging/start && \
-    echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /staging/repl && \
-    chmod a+rx /staging/start /staging/repl
+    && rm -rf .yarnrc.yml .yarn \
+    && echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --built "$@"' > /staging/start \
+    && echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /staging/repl \
+    && chmod a+rx /staging/start /staging/repl \
+    && true
 
 ## --------------> Add to default image
 FROM gcr.io/distroless/nodejs-debian11:18 as base
@@ -48,6 +52,7 @@ USER nonroot
 WORKDIR /pipeline/source
 COPY --chown=nonroot:nonroot --from=build /pipeline/source/node_modules /pipeline/source/node_modules
 COPY --chown=nonroot:nonroot package.json /pipeline/source/
+COPY --chown=nonroot:nonroot coconfig.* /pipeline/source/
 COPY --chown=nonroot:nonroot next.config.js /pipeline/source/
 COPY --chown=nonroot:nonroot build/ /pipeline/source/build/
 COPY --chown=nonroot:nonroot src/ /pipeline/source/src/
