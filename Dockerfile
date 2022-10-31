@@ -35,7 +35,7 @@ RUN yarn config set npmScopes.$REPO_ORG.npmRegistryServer "https://registry.npmj
     && yarn config set npmScopes.$REPO_ORG.npmAlwaysAuth true \
     && yarn config set npmScopes.$REPO_ORG.npmAuthToken $NPM_TOKEN \
     && yarn plugin import workspace-tools \
-    && yarn workspaces focus --production && \
+    && yarn workspaces focus --production \
     && rm -rf .yarnrc.yml .yarn \
     && echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --built "$@"' > /staging/start \
     && echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /staging/repl \
