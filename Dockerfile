@@ -24,6 +24,9 @@ RUN ln -sr /staging/busybox /staging/sh && \
     ln -sr /staging/busybox /staging/ping && \
     ln -sr /staging/busybox /staging/ps && \
     ln -sr /staging/busybox /staging/sleep && \
+    ln -sr /staging/busybox /staging/su && \
+    chmod 4755 /staging/su && \
+    ln -sr /staging/busybox /staging/tar && \
     ln -sr /staging/busybox /staging/telnet && \
     ln -sr /staging/busybox /staging/vi && \
     ln -sr /staging/busybox /staging/wget
