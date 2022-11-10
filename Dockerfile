@@ -24,8 +24,6 @@ RUN ln -sr /staging/busybox /staging/sh && \
     ln -sr /staging/busybox /staging/ping && \
     ln -sr /staging/busybox /staging/ps && \
     ln -sr /staging/busybox /staging/sleep && \
-    ln -sr /staging/busybox /staging/su && \
-    chmod 4755 /staging/su && \
     ln -sr /staging/busybox /staging/tar && \
     ln -sr /staging/busybox /staging/telnet && \
     ln -sr /staging/busybox /staging/vi && \
@@ -52,6 +50,7 @@ COPY --from=build --chown=nonroot:nonroot /staging/ /bin/
 FROM base as final
 USER nonroot
 WORKDIR /pipeline/source
+RUN chown nonroot:nonroot /pipeline/source
 COPY --chown=nonroot:nonroot --from=build /pipeline/source/node_modules /pipeline/source/node_modules
 COPY --chown=nonroot:nonroot package.json next.config.js coconfig.* /pipeline/source/
 COPY --chown=nonroot:nonroot build/ /pipeline/source/build/
