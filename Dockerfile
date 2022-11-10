@@ -45,14 +45,14 @@ RUN yarn config set npmScopes.$REPO_ORG.npmRegistryServer "https://registry.npmj
 ## --------------> Add to default image
 FROM gcr.io/distroless/nodejs-debian11:18 as base
 COPY --from=build --chown=nonroot:nonroot /staging/ /bin/
+RUN /bin/busybox mkdir -p /pipeline/source && /bin/busybox chown nonroot:nonroot /pipeline/source
 
 ## --------------> Build the pipeline directory
 FROM base as final
 USER nonroot
-WORKDIR /pipeline
-RUN /bin/busybox mkdir source
+WORKDIR /pipeline/source
 COPY --chown=nonroot:nonroot --from=build /pipeline/source/node_modules /pipeline/source/node_modules
-COPY --chown=nonroot:nonroot package.json next.config.js coconfig.* /pipeline/source/
+COPY --chown=nonroot:nonroot package.json next.config.* coconfig.* /pipeline/source/
 COPY --chown=nonroot:nonroot build/ /pipeline/source/build/
 COPY --chown=nonroot:nonroot src/ /pipeline/source/src/
 COPY --chown=nonroot:nonroot config/ /pipeline/source/config/
