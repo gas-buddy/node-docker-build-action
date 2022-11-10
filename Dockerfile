@@ -50,7 +50,7 @@ COPY --from=build --chown=nonroot:nonroot /staging/ /bin/
 FROM base as final
 USER nonroot
 WORKDIR /pipeline
-RUN /staging/busybox mkdir source
+RUN /bin/busybox mkdir source
 COPY --chown=nonroot:nonroot --from=build /pipeline/source/node_modules /pipeline/source/node_modules
 COPY --chown=nonroot:nonroot package.json next.config.js coconfig.* /pipeline/source/
 COPY --chown=nonroot:nonroot build/ /pipeline/source/build/
