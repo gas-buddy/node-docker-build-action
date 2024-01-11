@@ -2,7 +2,7 @@
 FROM busybox:1.35.0-uclibc as busybox
 
 # --------------> The build image
-FROM node:18.11-bullseye AS build
+FROM node:18.19-bullseye AS build
 ARG NPM_TOKEN
 ARG REPO_ORG
 ARG BUILD_NODE_ENV=production

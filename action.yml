@@ -41,6 +41,7 @@ runs:
         touch public
         touch private
         touch migrations
+        touch api
         touch next.config.js
         echo "config/development.json" >> .dockerignore
         echo "config/test.json" >> .dockerignore
