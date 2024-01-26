@@ -40,6 +40,8 @@ runs:
         cp ${{ github.action_path }}/Dockerfile .
         touch public
         touch private
+        touch build-static
+        touch static
         touch migrations
         touch api
         touch next.config.js
