@@ -16,6 +16,8 @@ Notes
 The Dockerfile copies only selected directories, so you must be careful about where you place files that you want to be in the runtime image. The following directories are copied:
 
 * build - Typically where built code is placed
+* build-static - Typically where resource bundles generated for web pages are placed
+* static - Publicly available files needed for web pages can be placed here such as favicon
 * src - Copied for debuggability, but perhaps should be removed
 * config - Configuration and keys - development.json and test.json will be removed
 * migrations - Database migrations
