@@ -69,6 +69,7 @@ USER nonroot
 ENV NODE_ENV production
 ENV NODE_NO_WARNINGS 1
 ENV NO_PRETTY_LOGS 1
+ENV PATH /nodejs/bin:$PATH
 WORKDIR /pipeline/source
 CMD ["node_modules/@gasbuddy/service/build/bin/start-service.js"]
 COPY --from=final --chown=nonroot:nonroot /pipeline/source /pipeline/source
