@@ -1,5 +1,5 @@
 # --------------> For some extra tooling
-FROM busybox:1.35.0-uclibc as busybox
+FROM public.ecr.aws/docker/library/busybox:1.35.0-uclibc as busybox
 
 # --------------> The build image
 FROM node:18.19-bullseye AS build
