@@ -3,7 +3,6 @@ FROM public.ecr.aws/docker/library/busybox:1.35.0-uclibc as busybox
 
 # --------------> The build image
 FROM public.ecr.aws/docker/library/node:18.19-bullseye AS build
-ARG NPM_TOKEN
 ARG REPO_ORG
 ARG BUILD_NODE_ENV=production
 WORKDIR /pipeline/source
@@ -31,9 +30,10 @@ RUN ln -sr /staging/busybox /staging/sh && \
 
 # Run our custom yarn setup
 ENV NODE_ENV=$BUILD_NODE_ENV
-RUN yarn config set npmScopes.$REPO_ORG.npmRegistryServer "https://registry.npmjs.org" \
+RUN --mount=type=secret,id=NPM_TOKEN \
+    yarn config set npmScopes.$REPO_ORG.npmRegistryServer "https://registry.npmjs.org" \
     && yarn config set npmScopes.$REPO_ORG.npmAlwaysAuth true \
-    && yarn config set npmScopes.$REPO_ORG.npmAuthToken $NPM_TOKEN \
+    && yarn config set npmScopes.$REPO_ORG.npmAuthToken $(cat /run/secrets/NPM_TOKEN) \
     && yarn plugin import workspace-tools \
     && yarn workspaces focus --production \
     && rm -rf .yarnrc.yml .yarn \
@@ -65,8 +65,9 @@ COPY --chown=nonroot:nonroot private/ /pipeline/source/private/
 
 ## --------------> Flatten where possible
 FROM base
+ARG BUILD_NODE_ENV=production
 USER nonroot
-ENV NODE_ENV production
+ENV NODE_ENV=$BUILD_NODE_ENV
 ENV NODE_NO_WARNINGS 1
 ENV NO_PRETTY_LOGS 1
 ENV PATH /nodejs/bin:$PATH

@@ -30,12 +30,18 @@ inputs:
     description: "The organization to setup for private package installation"
     required: false
     default: gasbuddy
+  node-env:
+    description: "The NODE_ENV value for the Docker build"
+    required: false
+    default: production
 
 runs:
   using: "composite"
   steps:
     - name: Build docker image ${{ inputs.registry-name }}:${{ inputs.image-tag }}
       shell: bash
+      env:
+        NPM_TOKEN: ${{ inputs.npm-token }}
       run: |
         cp ${{ github.action_path }}/Dockerfile .
         touch public
@@ -47,7 +53,7 @@ runs:
         touch next.config.js
         echo "config/development.json" >> .dockerignore
         echo "config/test.json" >> .dockerignore
-        docker build --build-arg REPO_ORG=${{ inputs.repo-org }} --build-arg NPM_TOKEN=${{ inputs.npm-token }} -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
+        docker build --build-arg REPO_ORG=${{ inputs.repo-org }} --build-arg BUILD_NODE_ENV=${{ inputs.node-env }} --secret id=NPM_TOKEN,env=NPM_TOKEN -t ${{ inputs.registry-name }}:${{ inputs.image-tag }} .
       if: ${{ inputs.skip-build != 'true' }}
 
     - name: Push to ECR
