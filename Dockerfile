@@ -84,6 +84,12 @@ ENV NODE_ENV=$BUILD_NODE_ENV
 ENV NODE_NO_WARNINGS 1
 ENV NO_PRETTY_LOGS 1
 ENV PATH /nodejs/bin:$PATH
+# Enable globalThis.crypto on Node 18. Node 18 only exposes Web Crypto as a global with this
+# flag; bare `crypto` references in module scope (e.g. AWS SDK v3 / @smithy/core v3+ used by
+# @gasbuddy/client-sqs) throw `ReferenceError: crypto is not defined` without it. Node 19+ makes
+# this the default and the flag becomes a no-op, so this is safe to leave in place once consumers
+# move to Node 20.
+ENV NODE_OPTIONS=--experimental-global-webcrypto
 WORKDIR /pipeline/source
 CMD ["node_modules/@gasbuddy/service/build/bin/start-service.js"]
 COPY --from=final --chown=nonroot:nonroot /pipeline/source /pipeline/source
