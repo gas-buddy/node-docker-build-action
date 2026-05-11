@@ -2,7 +2,10 @@
 FROM public.ecr.aws/docker/library/busybox:1.35.0-uclibc as busybox
 
 # --------------> The build image
-FROM public.ecr.aws/docker/library/node:18.19-bullseye AS build
+# Pinned to 18.20-bullseye to match the runtime base (18.20-bullseye-slim). Keeping the build
+# and runtime stages on the same Node minor + same Debian release avoids subtle V8/OpenSSL
+# drift for native modules (bcrypt, node-gyp, nan) compiled here and executed at runtime.
+FROM public.ecr.aws/docker/library/node:18.20-bullseye AS build
 ARG REPO_ORG
 ARG BUILD_NODE_ENV=production
 WORKDIR /pipeline/source
@@ -43,9 +46,22 @@ RUN --mount=type=secret,id=NPM_TOKEN \
     && true
 
 ## --------------> Add to default image
-FROM gcr.io/distroless/nodejs-debian11:18 as base
+# Switched from gcr.io/distroless/nodejs-debian11:18 to AWS public ECR mirror to comply
+# with our move off Docker Hub / gcr.io on self-hosted runners. The slim variant ships with
+# /usr/local/bin/node; we symlink it to /nodejs/bin/node and create a `nonroot` user
+# (uid/gid 65532) so existing helm securityContext and start-script contracts continue to work.
+# Pinned to 18.20-bullseye-slim — Node 18.20.x has globalThis.crypto (required by
+# @smithy/core v3+ used by @gasbuddy/client-sqs); the previously floating distroless `:18`
+# tag drifted to 18.15.0 and broke startup.
+FROM public.ecr.aws/docker/library/node:18.20-bullseye-slim as base
+RUN groupadd --system --gid 65532 nonroot \
+    && useradd --system --uid 65532 --gid 65532 --home /home/nonroot --create-home --shell /sbin/nologin nonroot \
+    && mkdir -p /nodejs/bin \
+    && ln -s /usr/local/bin/node /nodejs/bin/node \
+    && mkdir -p /pipeline/source \
+    && chown nonroot:nonroot /pipeline/source
 COPY --from=build --chown=nonroot:nonroot /staging/ /bin/
-RUN /bin/busybox mkdir -p /pipeline/source && /bin/busybox chown nonroot:nonroot /pipeline/source
+ENTRYPOINT ["/nodejs/bin/node"]
 
 ## --------------> Build the pipeline directory
 FROM base as final
@@ -71,6 +87,12 @@ ENV NODE_ENV=$BUILD_NODE_ENV
 ENV NODE_NO_WARNINGS 1
 ENV NO_PRETTY_LOGS 1
 ENV PATH /nodejs/bin:$PATH
+# Enable globalThis.crypto on Node 18. Node 18 only exposes Web Crypto as a global with this
+# flag; bare `crypto` references in module scope (e.g. AWS SDK v3 / @smithy/core v3+ used by
+# @gasbuddy/client-sqs) throw `ReferenceError: crypto is not defined` without it. Node 19+ makes
+# this the default and the flag becomes a no-op, so this is safe to leave in place once consumers
+# move to Node 20.
+ENV NODE_OPTIONS=--experimental-global-webcrypto
 WORKDIR /pipeline/source
 CMD ["node_modules/@gasbuddy/service/build/bin/start-service.js"]
 COPY --from=final --chown=nonroot:nonroot /pipeline/source /pipeline/source
