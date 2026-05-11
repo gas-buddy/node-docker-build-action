@@ -43,9 +43,22 @@ RUN --mount=type=secret,id=NPM_TOKEN \
     && true
 
 ## --------------> Add to default image
-FROM gcr.io/distroless/nodejs-debian11:18 as base
+# Switched from gcr.io/distroless/nodejs-debian11:18 to AWS public ECR mirror to comply
+# with our move off Docker Hub / gcr.io on self-hosted runners. The slim variant ships with
+# /usr/local/bin/node; we symlink it to /nodejs/bin/node and create a `nonroot` user
+# (uid/gid 65532) so existing helm securityContext and start-script contracts continue to work.
+# Pinned to 18.20-bullseye-slim — Node 18.20.x has globalThis.crypto (required by
+# @smithy/core v3+ used by @gasbuddy/client-sqs); the previously floating distroless `:18`
+# tag drifted to 18.15.0 and broke startup.
+FROM public.ecr.aws/docker/library/node:18.20-bullseye-slim as base
+RUN groupadd --system --gid 65532 nonroot \
+    && useradd --system --uid 65532 --gid 65532 --home /home/nonroot --create-home --shell /sbin/nologin nonroot \
+    && mkdir -p /nodejs/bin \
+    && ln -s /usr/local/bin/node /nodejs/bin/node \
+    && mkdir -p /pipeline/source \
+    && chown nonroot:nonroot /pipeline/source
 COPY --from=build --chown=nonroot:nonroot /staging/ /bin/
-RUN /bin/busybox mkdir -p /pipeline/source && /bin/busybox chown nonroot:nonroot /pipeline/source
+ENTRYPOINT ["/nodejs/bin/node"]
 
 ## --------------> Build the pipeline directory
 FROM base as final
