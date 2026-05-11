@@ -2,7 +2,10 @@
 FROM public.ecr.aws/docker/library/busybox:1.35.0-uclibc as busybox
 
 # --------------> The build image
-FROM public.ecr.aws/docker/library/node:18.19-bullseye AS build
+# Pinned to 18.20-bullseye to match the runtime base (18.20-bullseye-slim). Keeping the build
+# and runtime stages on the same Node minor + same Debian release avoids subtle V8/OpenSSL
+# drift for native modules (bcrypt, node-gyp, nan) compiled here and executed at runtime.
+FROM public.ecr.aws/docker/library/node:18.20-bullseye AS build
 ARG REPO_ORG
 ARG BUILD_NODE_ENV=production
 WORKDIR /pipeline/source
