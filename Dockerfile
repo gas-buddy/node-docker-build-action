@@ -40,8 +40,8 @@ RUN --mount=type=secret,id=NPM_TOKEN \
     && yarn plugin import workspace-tools \
     && yarn workspaces focus --production \
     && rm -rf .yarnrc.yml .yarn \
-    && echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --built "$@"' > /staging/start \
-    && echo '#!/bin/sh\n/nodejs/bin/node node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /staging/repl \
+    && echo '#!/bin/sh\n/nodejs/bin/node --experimental-global-webcrypto node_modules/@gasbuddy/service/build/bin/start-service.js --built "$@"' > /staging/start \
+    && echo '#!/bin/sh\n/nodejs/bin/node --experimental-global-webcrypto node_modules/@gasbuddy/service/build/bin/start-service.js --repl "$@"' > /staging/repl \
     && chmod a+rx /staging/start /staging/repl \
     && true
 
@@ -61,7 +61,10 @@ RUN groupadd --system --gid 65532 nonroot \
     && mkdir -p /pipeline/source \
     && chown nonroot:nonroot /pipeline/source
 COPY --from=build --chown=nonroot:nonroot /staging/ /bin/
-ENTRYPOINT ["/nodejs/bin/node"]
+ENTRYPOINT ["/nodejs/bin/node", "--experimental-global-webcrypto"]
+
+# Fail the build if the flag does not expose globalThis.crypto (base image regression / multi-arch drift).
+RUN /nodejs/bin/node --experimental-global-webcrypto -e 'if (typeof globalThis.crypto?.getRandomValues !== "function") { console.error("FATAL: --experimental-global-webcrypto did not expose globalThis.crypto"); process.exit(1); }'
 
 ## --------------> Build the pipeline directory
 FROM base as final
@@ -87,11 +90,6 @@ ENV NODE_ENV=$BUILD_NODE_ENV
 ENV NODE_NO_WARNINGS 1
 ENV NO_PRETTY_LOGS 1
 ENV PATH /nodejs/bin:$PATH
-# Enable globalThis.crypto on Node 18. Node 18 only exposes Web Crypto as a global with this
-# flag; bare `crypto` references in module scope (e.g. AWS SDK v3 / @smithy/core v3+ used by
-# @gasbuddy/client-sqs) throw `ReferenceError: crypto is not defined` without it. Node 19+ makes
-# this the default and the flag becomes a no-op, so this is safe to leave in place once consumers
-# move to Node 20.
 ENV NODE_OPTIONS=--experimental-global-webcrypto
 WORKDIR /pipeline/source
 CMD ["node_modules/@gasbuddy/service/build/bin/start-service.js"]
